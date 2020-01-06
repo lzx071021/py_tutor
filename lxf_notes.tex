@@ -1,0 +1,292 @@
+\documentclass{report}
+\usepackage[utf-8]{inputenc}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\title{lxf Python Tutorial Note}
+\author{Shicong Nie \thanks{liaoxuefeng}}
+\date{\today}
+
+\begin{document}
+\begin{titlepage}
+    \maketitle
+\end{titlepage}
+
+\tableofcontents
+
+\section{简介}
+适合： Web应用：网站，后台服务
+      日常小工具
+      包装其它语言开发的程序，方便使用
+慢
+代码不能加密
+\section{安装python}
+解释型语言，需要解释器：CPython，IPython，PyPy，etc。
+\section{第一个Python程序}
+I/O：print()无返回值，input()返回str。
+\section{Python基础}
+1. 数据类型和变量
+   r' '，表示' '内部的字符串默认不转义
+   '''...'''，表示多行内容
+   布尔运算：and，or，not
+   空值None
+   变量数据类型不固定 --> 动态语言
+   没有常量
+2. 字符编码
+   ASCII --> 英文 + 符号
+   Unicode --> 所有语言 + 符号
+   简化版utf-8
+   内存使用Unicode，硬盘使用utf-8
+   Python的字符串使用Unicode，ord()，chr()
+   str类型，用于展示 $\xleftrightarrow[decode()]{encode()}$ bytes类型，用于传输和保存
+   格式化：\%d, \%f, \%s, \%2d, \%05d, \%.2f
+   str.format()
+3. list和tuple
+   list，可变有序序列：.append(), .insert(), .pop()
+   tuple，（“指向”）不可变有序序列，元素在定义时就确定
+   单个元素的tuple：t = (x,)
+4. 条件判断
+   if x 为 True <-- x为非零数、非空str、非空list、tuple、etc
+   if else， elif
+5. 循环
+   for a in b， while
+   break， continue
+6. 使用dict和set
+   dict：key-value，x in d， d.get()，d.pop()
+   key为不可变对象
+   set：自动去重复，s.add()，s.remove() 
+   dict和set的原理相同，唯一区别在于set没有存储value
+\section{函数}
+1. 调用函数
+   函数名是函数对象的引用，可赋值给其他变量
+2. 定义函数
+   空函数pass
+   参数检查，isinstance()
+   返回“多个值” --> 一个tuple
+   没有return --> return None 
+3. 函数的参数
+   顺序：位置（必选）、默认、可变、关键字、命名关键字
+   默认参数必须指向不变对象；利用None 
+   可变，*
+   关键字，**
+   命名关键字，*分割
+   任意函数的调用：func(*args, **kw)
+4. 递归函数
+   栈溢出 --> 尾递归优化：始终占用一个栈帧；每次迭代的结果传入递归函数中
+   尾递归 = 循环：函数返回自身函数对象，即return语句不能包含表达式
+   Python未对尾递归做优化
+\section{高级特性}
+1. 切片（slicing）：[start:step:stop], list, tuple, str 
+2. 迭代（iteration）：for --> 可迭代对象
+   判断可迭代：from collections import Iterable
+             isinstance(x, Iterable)
+   dict默认迭代key，要迭代value --> for v in d.values()
+   同时迭代key，value --> for k, v in d.items() 
+   enumerate \Rightarrow 索引-元素对
+3. 列表生成式（list comprehension）
+   list(range(...))
+   [x for if] 
+4. 生成器（generator）
+   生成器定义的是算法，按需使用，当要生成的东西数量不确定或很大时使用
+   ()，next(g) --> StopIteration， for x in g --> No StopIteration 
+   修改函数得到生成器：yield
+   捕获生成器函数return语句的返回值：StopIteration $\xrightarrow{try except}$ e.value 
+5. 迭代器（Iterator）
+   可被next()调用并不断返回下一个值的对象
+   Iterator != Iterable 
+   判断：isinstance(x, Iterator) 
+   惰性序列，按需计算（惰性计算）：调用next()时才计算，for = next 
+   Iterable: list, dict, str, etc. 
+   Iterator: generator, iter(Iterable) 
+\section{函数式编程}
+函数式：函数本身可作为参数，允许返回函数
+纯函数式：没有变量，输入确定时输出确定，没有副作用
+Python允许变量 --> 非纯函数式
+1. 高阶函数
+   至少满足其一：接受函数参数；返回函数
+   abs()函数调用abs函数本身，abs是指向函数的引用
+    (1)map() / reduce()
+        from functools import map, reduce 
+        map()返回惰性序列，reduce()
+        函数内定义函数
+        lambda只有一句表达式，可用于简化代码
+    (2)filter()
+        built-in func 
+        返回惰性序列
+        关键在于编写筛选函数
+    (3)sorted()
+        sorted(Iterable, *, key, reverse)
+        关键在于编写key映射函数
+2. 返回函数
+   闭包（Closure）：惰性函数，相关参数和变量都保存在返回的函数中
+   使用()才被执行
+   返回闭包（被返回的函数）时，闭包不要引用任何循环变量，或者后续会发生变化的变量
+3. 匿名函数lambda
+4. 装饰器（decorator）
+   在代码运行期间动态增加功能的方式
+   本质上，是一个返回函数的高阶函数，同时接受被装饰的函数作为参数
+   @log $\Leftrightarrow$ now = log(now) 
+   原来的函数对象依然存在，但其函数名变量指向了新的被装饰后的函数
+   decorator本身需要参数 --> 再编写一个外层的返回decorator的高阶函数（也是一个decorator）
+   防止依赖函数签名的代码出错，需要把原始函数的 __name__ 等属性复制到装饰器返回的函数 --> functools模块的wraps(): @functools.wraps(func)
+5. 偏函数
+   functools.partial()：创建一个新的函数，固定住原函数的部分参数，简化原函数参数传入，方便调用
+\section{模块}
+.py = module 
+包（package）：带有 __init__.py 的目录
+__init__.py 的模块名是它所在的包的名字（命名从最外层的包开始）
+1. 使用模块
+   #! /usr/bin/env python3
+   #! -*- coding: utf-8 -*- 
+   模块注释
+   __author__ = ...
+   import module 
+   sys.argv 
+   if __name__ == '__main__' 
+   作用域：public， private：命名前带 _ ，只是形式、编程习惯
+2. 安装第三方模块
+   运行时临时添加路径 --> import sys 
+                       sys.path.append() 
+   直接添加：设置环境变量PYTHONPATH
+\section{面向对象编程}
+OOP：把对象（Object）作为程序的基本单元，一个对象包含了数据（property / attribute）和操作数据的函数（method）
+OOP程序：一组对象的集合，对象间传递消息，使程序运行
+类（class），实例（instance）
+三大特点：数据封装，继承，多态
+1. 类和实例
+   class Student(Object)
+   def __init__(self, ...)
+   数据封装 --> method 
+   Python允许对实例动态绑定新的属性和数据，不管__init__()中有没有定义
+2. 访问限制
+   在属性前面加双下划线 __ --> 私有变量，但依然不能完全阻止，只是被解释器修改了属性名，e.g. __name --> _Student__name 
+   get，set方法 --> 用来给外部访问和设置私有变量，方便对参数做检查
+   __xx__，特殊变量
+   单下划线，约定私有
+3. 继承和动态
+   子类subclass，父类superclass
+   class Dog(Animal)
+   多态：子类继承的同名方法可以被修改；父类符合即可传入：自动调用实际类型的同名方法
+   调用方只管调用，不管细节
+   class = 自定义的数据类型，isinstance()
+   “开闭”原则：对扩展开放，对修改封闭
+   Python动态语言，不对参数做类型检查 --> 鸭子类型（duck typing）：像鸭子，就是鸭子。
+   该对象只要实现了对应的方法，就可被调用，故Python不要求严格的继承体系
+4. 获取对象信息
+   type()，返回class
+   import types, type(f) == types.FunctionType --> 判断f是否是函数 
+   isinstance() --> 判断具有继承关系的class，同时判断指定类型及其子类。总是优先使用
+   isinstance(xx, (tuple))，判断是否是tuple中所含类型的一种
+   dir() --> object的所有属性和方法
+   len() $\Leftrightarrow$ __len__() 
+   getattr(), setattr(), hasattr() 
+5. 实例属性和类属性 
+   实例属性：通过self或实例变量定义，各个实例互不干扰 
+   类属性：类所有，实例共用 
+   避免重名：实例属性比类属性优先级高，同名类属性将被覆盖
+\section{面向对象高级编程}
+1. 使用__slots__ 
+   Python允许给实例动态（运行时）绑定新的属性和方法
+   给单个实例绑定方法：from types import MethodType
+                    s.set_age = MethodType(f, s)
+   所有实例 --> 绑定class： Student.set_age = f，或直接在class中定义 
+   特殊变量__slots__ --> 限制实例的属性：e.g. __slots__ = ('name', 'age')
+   只对当前类的实例起作用，对继承的子类不起作用 
+2. 使用@property 
+   @property装饰器：将方法作为属性调用
+   避免使用getattr和setter方法：getter和setter变成两个同名函数 --> 方便外部操作
+   e.g. @property 
+        def score(...)
+
+        @property
+        def score(...)
+   只读属性：只定义getter方法（通过@property装饰）
+   被广泛使用，内置
+3. 多重继承
+   class Dog(Mammal, Runnable)
+   一个子类同时获得多个父类的所有功能 
+   多重继承允许MixIn：“混入”额外的功能。
+   设计类时，优先考虑通过多重继承来组合多个MixIn的功能，而不是设计多层次的复杂的继承关系 
+4. 定制类 
+   利用特殊方法名（special method names）
+   __slots__, __len__, __str__, __repr__, __iter__, __next__, __getitem__, __setitem__, __getattr__, __call__ 
+   REST API 
+   通常__str__()与__repr__()函数体一样，偷懒 --> __str__ = __repr__ 
+5. 使用枚举类 
+   from enum import Enum 
+   Enum把一组相关常量定义在一个class中，该class不可变，而且成员（类属性）可以相互比较 
+   可以用成员名称引用枚举常量，又可以直接根据value的值获得获得枚举常量（value是int类型，默认从1开始计数）
+   更精确地控制枚举成员的类型 --> 从Enum派生（继承）出自定义类
+   from enum import unique, @unique帮助检查重复值 
+6. 使用元类 
+   一个类的类型是type，一个类的实例的类型是这个类（的名字）
+   Python的class是运行时通过type()动态创建的
+   元类metaclass $\Rightarrow$ 类 $\Rightarrow$ 实例，类是类的实例 
+   强大，魔术；需要创建很多个类时可以使用
+\section{错误、调试和测试}
+1. 错误处理 
+   try except except else finally 
+   Python的错误也是类，所有的错误类型都继承自BaseException 
+   所以except捕获当前类型的错误及该错误类型的子类 
+   try except跨越多层调用
+   错误的调用栈 
+   记录错误，并让程序继续执行 --> import logging
+                              logging.exception(e) 
+   抛出错误：一个错误是该错误类型的实例，是被有意创建并抛出的。raise ValueError()，可以单独写raise 
+   尽量使用Python内置的错误类型 
+   捕获 + 抛出：捕获只是记录，处理错误需要将错误抛出，让顶层调用者处理 
+   except中的raise：转化错误类型。合理的转化逻辑 
+   文档中应写明可能会抛出哪些错误，以及错误产生的原因 
+2. 调试 
+   print() 
+   assert, 关闭assert（当成pass）--> python -O err.py  
+   logging: import logging 
+            logging.basicConfig(level=...)
+            logging.info(...) 
+   level有四个从低到高的级别，高级别覆盖高级别。logging可以输出到文档
+   pdb：import pdb 
+        python -m pdb err.py 
+        命令：l, n, p, q, etc. 
+        pdf.set_trace() 
+   IDE 
+   logging是终极武器
+3. 单元测试 
+   有效地测试某个程序模块的行为，方便未来重构 
+   测试用例覆盖常用的输入组合、边界条件和异常；测试代码要非常简单，防止自身出bug 
+   class TestDict(unittest.TestCase)
+   def test_xx()
+       self.assertEqual() 
+   python -m unitest mydict_test 
+   setUp(), tearDown() 
+4. 文档测试 
+   if __name__ == '__main__' 
+       import doctest
+       doctest.testmode()
+   >>>expr 
+   expected 
+   文档生成工具可以自动把包含doctest的注释提取出来 
+\section{I/O编程（同步I/O)}
+同步、异步I/O
+Input：输入内存；Output：输出内存 
+1. 文件读写 
+   try finally
+   f.open(), f.read(), f.write(), f.close()  
+   with open(xx, 'x') as f 
+   read(), read(size), readline(), readlines()
+   对于配置文件，readlines()最方便 
+   file-like Object：有read()方法的object 
+   open(..., encoding=, error=)
+2. StringIO和BytesIO 
+   在内存中操作str和bytes的方法，使其和读写文件具有一致的接口
+3. 操作文件和目录
+   os模块、os.path模块：直接调用操作系统提供的操作文件和目录的接口函数，OS dependent 
+4. 序列化
+   把变量从内存中变成可存储或可传输的过程 
+   Python中叫pickling，其他语言叫serialization， flattening，etc
+   反序列化unpickling 
+   pickle模块：.dumps(), .dump(), .loads(), .load()
+   序列化为标准格式，方便传递：JSON，XML，etc 
+   JSON更通用，更符合Web标准
+   json模块：.dumps(), etc.。通过传入函数参数定制序列化或反序列化的规则
+
+\end{document}
